@@ -1,0 +1,30 @@
+
+[INPUT]
+
+[OUTPUT]
+
+
+
+// a[transaction] = 1;
+// req=1 res=1 activeTX=1 
+// $4 tx,  $8 Start,end
+awk '{
+        time = substr($2,1,index($2,".")-1);
+        if($8 == "Start") {
+            tx[$4] = 1;
+            req[time] += 1;
+            if(!(time in res))
+                res[time] = 0;
+        } else {
+            delete tx[$4];
+            res[time] += 1;
+            if(!(time in req))
+                req[time] = 0;
+        }
+        active[time] = length(tx);
+    }
+     END{ for(k in req) { 
+          printf "%s req=%s res=%s activeTX=%s\n", k, req[k], res[k], active[k] } 
+     }' core.2021-07-23.all | cat > req_res_act.txt
+
+sort -t ' ' -nk1 req_res_act.txt | cat > req_res_act_sort.txt
