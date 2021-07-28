@@ -1,6 +1,11 @@
 [Input]
 20210723 00:00:00.402 [https-jsse-nio-8443-exec-2739] f95583c5-84e7-43cf-9078-254714376825 DEBUG o.s.w.f.CommonsRequestLoggingFilter - Start GET /house/device?site=772&house=104&deviceNo=1, client=10.255.0.2, headers=[host:"172.20.200.200:30001", user-agent:"Dalvik/1.6.0 (Linux; U; Android 4.2.2; hnf_i1102 Build/JDQ39)", accept-encoding:"gzip, deflate", connection:"keep-alive", accept:"*/*"]]
 
+[Output]  초당 요청 개수 집계
+15:38:51 10
+15:38:52 2
+
+
 // 초당 요청 개수 집계
 awk '{ a[substr($2,1,index($2,".")-1)]+= 1 }
      END{ for(k in a) { 
