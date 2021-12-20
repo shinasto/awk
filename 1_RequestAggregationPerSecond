@@ -1,5 +1,6 @@
 [Input]
 20210723 00:00:00.402 [https-jsse-nio-8443-exec-2739] f95583c5-84e7-43cf-9078-254714376825 DEBUG o.s.w.f.CommonsRequestLoggingFilter - Start GET /house/device?site=772&house=104&deviceNo=1, client=10.255.0.2, headers=[host:"172.20.200.200:30001", user-agent:"Dalvik/1.6.0 (Linux; U; Android 4.2.2; hnf_i1102 Build/JDQ39)", accept-encoding:"gzip, deflate", connection:"keep-alive", accept:"*/*"]]
+20210723 00:00:01.002 [https-jsse-nio-8443-exec-2739] f95583c5-84e7-43cf-9078-254714376825 DEBUG o.s.w.f.CommonsRequestLoggingFilter - End GET /house/device?site=772&house=104&deviceNo=1
 
 [Output]  초당 요청 개수 집계
 15:38:51 10
@@ -7,11 +8,11 @@
 
 
 // 초당 요청 개수 집계
-awk '{ a[substr($2,1,index($2,".")-1)]+= 1 }
-     END{ for(k in a) { 
-          split(k, keys, SUBSEP); 
-          printf "%s %s\n", keys[1], a[k] } 
-     }' core.2021-07-23.request | cat > req_cnt_per_sec.txt
+awk '{ if ($8 == "Start") {a[substr($2,1,index($2,".")-1)]+= 1}}
+     END{ for(k in a) {
+          split(k, keys, SUBSEP);
+          printf "%s %s\n", keys[1], a[k] }
+     }' request.txt | cat > req_cnt_per_sec.txt
 
 // 시간 기준 내림차수 정렬
 sort -t ' ' -nk1 req_cnt_per_sec.txt | cat > req_cnt_per_sec_sort.txt
