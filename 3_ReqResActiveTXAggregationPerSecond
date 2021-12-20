@@ -32,6 +32,6 @@ awk '{
         printf "time req res act\n"
         for(k in req) { 
           printf "%s req=%-4s res=%-4s activeTX=%-4s\n", k, req[k], res[k], active[k] } 
-     }' core.all | cat > req_res_act.txt
+     }' request.txt | cat > req_act_tx.txt
 
-sort -t ' ' -nk1 req_res_act.txt | cat > req_res_act_sort.txt
+sort -t ' ' -nk1 req_act_tx.txt | cat > req_act_tx_sort.txt
