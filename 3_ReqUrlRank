@@ -8,13 +8,22 @@ POST /house 19
 PUT  /test 10
 
 -------------------------------------------------------------------------------------------------
-// 초당 request url
-awk '{ if ($8 == "Start") {a[substr($2,1,index($2,".")-1), $9, substr($10,1,index($10,"?")-1)] += 1 }}
-     END{ for(k in a) {
-          split(k, keys, SUBSEP);
-          printf "%s %-5s %s  %s\n", keys[1], keys[2], keys[3], a[k] }
-     }' request.txt | cat > req_url_cnt_per_sec.txt
+// url별 요청 수 수집
 
-// 시간기준 내림차순 정렬
-sort -t ' ' -nk1 req_url_cnt_per_sec.txt | cat > req_url_cnt_per_sec_sort.txt
+awk '{ 
+    if (index($10, ".") != 0 && (index($10, ".") < index($10, "?"))) {
+        url = $9 " " substr($10, 1, match($10, /\/[^\/]*$/))
+    } else {
+        url = $9 " " substr($10, 1, index($10,"?") == 0 ? length($10) - 1 : index($10,"?") - 1)
+    }
+    if ($8 == "Start") {
+        a[url] += 1 
+    }
+}
+END { 
+    for(k in a) {
+        printf "%s %s\n", k, a[k] 
+    }
+}' request.txt | cat > req_url_rank.txt
+
 -------------------------------------------------------------------------------------------------
