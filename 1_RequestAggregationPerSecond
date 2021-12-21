@@ -22,22 +22,22 @@ sort -t ' ' -nk1 req_cnt_per_sec.txt | cat > req_cnt_per_sec_sort.txt
 // 초당 요청 정보 통계 (합계, 최소, 최대, 평균 요청수)
 awk '
 BEGIN{
-	min = 9999
-	max = -1
-	total = 0
+    min = 9999
+    max = -1
+    total = 0
 }
 {
-	if ($8 == "Start") {
-		a[substr($2,1,index($2,".")-1)] += 1
-		total += 1
-	}
+    if ($8 == "Start") {
+        a[substr($2,1,index($2,".")-1)] += 1
+        total += 1
+    }
 }
 END{ for(k in a) {
-		if (min > a[k]) min = a[k]
-		if (max < a[k]) max = a[k]
-       		split(k, keys, SUBSEP);
-       		printf "%s %s\n", keys[1], a[k]
-	}
-	mean = total / length(a)
-	printf "info total request=%s, min=%s, max=%s, mean=%s\n", total, min, max, mean
+        if (min > a[k]) min = a[k]
+        if (max < a[k]) max = a[k]
+               split(k, keys, SUBSEP)
+               printf "%s %s\n", keys[1], a[k]
+    }
+    mean = total / length(a)
+    printf "info total request=%s, min=%s, max=%s, mean=%s\n", total, min, max, mean
 }' request.txt | cat > req_cnt_per_sec.txt
