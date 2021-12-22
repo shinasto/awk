@@ -33,10 +33,10 @@ BEGIN{
     }
 }
 END{ for(k in a) {
-        if (min > a[k]) min = a[k]
-        if (max < a[k]) max = a[k]
-               split(k, keys, SUBSEP)
-               printf "%s %s\n", keys[1], a[k]
+        if (min > a[k]) { min = a[k] }
+        if (max < a[k]) { max = a[k] }
+        split(k, keys, SUBSEP)
+        printf "%s %s\n", keys[1], a[k]
     }
     mean = total / length(a)
     printf "info total request=%s, min=%s, max=%s, mean=%s\n", total, min, max, mean
