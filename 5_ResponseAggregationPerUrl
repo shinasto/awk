@@ -1,0 +1,63 @@
+
+[Input]
+20210723 00:00:00.402 [https-jsse-nio-8443-exec-2739] f95583c5-84e7-43cf-9078-254714376825 DEBUG o.s.w.f.CommonsRequestLoggingFilter - Start GET /house/device?site=772&house=104&deviceNo=1, client=10.255.0.2, headers=[host:"172.20.200.200:30001", user-agent:"Dalvik/1.6.0 (Linux; U; Android 4.2.2; hnf_i1102 Build/JDQ39)", accept-encoding:"gzip, deflate", connection:"keep-alive", accept:"*/*"]]
+20210723 00:00:01.002 [https-jsse-nio-8443-exec-2739] f95583c5-84e7-43cf-9078-254714376825 DEBUG o.s.w.f.CommonsRequestLoggingFilter - End GET /house/device?site=772&house=104&deviceNo=1
+
+[Output]
+url total min max mean 25p 50p 75p 95p
+GET /resource/client/config/789/59AL/ 1 3 3 3.0 3.0 3.0 3.0 3.0
+GET /resource/client/config/789/84BR_F/ 2 4 4 4.0 4.0 4.0 4.0 4.0
+GET /initialdata/areatypedeviceproperty 23 5 43 9.5 7.0 7.0 9.0 16.0
+GET /resource/client/config/789/public/ 931 2 53 3.6 3.0 4.0 4.0 4.0
+GET /initialdata/household/detail 44 1 50 29.6 3.0 40.0 44.0 49.0
+GET /resource/client/config/789/75BL_F/ 2 4 4 4.0 4.0 4.0 4.0 4.0
+
+
+-------------------------------------------------------------------------------------------------
+// 요청 URL 별 응답 시간 집계
+
+gawk '
+    {
+        if (index($10, ".") != 0 && (index($10, ".") < index($10, "?"))) {
+            url = $9 " " substr($10, 1, match($10, /\/[^\/]*$/))
+        } else {
+            url = $9 " " substr($10, 1, index($10,"?") == 0 ? length($10) - 1 : index($10,"?") - 1)
+        }
+        tid = substr($4, 1, 12)
+        if($8 == "Start") {  
+            b = split(substr($2, 1, 8), a, ":")
+            mili = int(substr($2, 10, 12))
+            req_time[tid] = (int(a[1]) * 3600000.0) + (int(a[2]) * 60000) + (int(a[3]) * 1000) + mili
+        } else {
+             if (tid in req_time) {
+                b = split(substr($2, 1, 8), a, ":")
+                mili = int(substr($2, 10, 12))
+                agg[url][tid] = ((int(a[1]) * 3600000.0) + (int(a[2]) * 60000) + (int(a[3]) * 1000) + mili) - req_time[tid] 
+                delete req_time[tid]
+            }
+        }
+    }
+     END {
+        printf "method url total min max mean 25p 50p 75p 95p\n"
+        for(k in agg) { 
+            asort(agg[k])
+            min = 9999
+            max = -1
+            total = 0.0
+            for(j in agg[k]) {
+                t = agg[k][j]
+                if(min > t) { min = t }
+                if(max < t) { max = t }
+                total += t
+                #printf "url=%s rt=%s\n", k, t
+            }
+
+            n25 = int((25 / 100) * length(agg[k])) + 1
+            n50 = int((50 / 100) * length(agg[k])) + 1
+            n75 = int((75 / 100) * length(agg[k])) + 1
+            n95 = int((95 / 100) * length(agg[k])) + 1
+            #printf "n25=%s, n50=%s, n75=%s\n", n25, n50, n75
+            #printf "url=%s, total=%s, min=%s, max=%s, mean=%.1f, 25p=%.1f, 50p=%.1f, 75p=%.1f, 95p=%.1f\n", k, length(agg[k]), min, max, total/length(agg[k]),  agg[k][n25], agg[k][n50], agg[k][n75], agg[k][n95]
+            printf "%s %s %s %s %.1f %.1f %.1f %.1f %.1f\n", k, length(agg[k]), min, max, total/length(agg[k]),  agg[k][n25], agg[k][n50], agg[k][n75], agg[k][n95]
+        }
+    }' request.txt | cat > req_res_time.txt
